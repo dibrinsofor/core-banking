@@ -9,7 +9,7 @@ import (
 
 type DepositRequest struct {
 	AccountNumber string `json:"account_number" binding:"required"`
-	Amount        int    `json:"deposit" binding:"required"`
+	Amount        int    `json:"amount" binding:"required"`
 }
 
 func (h *Handler) Deposit(c *gin.Context) {

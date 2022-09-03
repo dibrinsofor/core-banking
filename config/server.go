@@ -35,11 +35,13 @@ func (s *Server) SetupRoutes() *gin.Engine {
 
 	s.e.GET("/healthcheck", s.h.Healthcheck)
 	s.e.POST("/createAccount", s.h.CreateUser)
+	s.e.POST("/deposit", s.h.Deposit)
+	s.e.POST("/withdraw", s.h.Withdraw)
 
 	// authenticatedRoutes := s.e.Group("/auth").Use(middlewares.AuthorizeJWT())
 	// {
-	// 	authenticatedRoutes.POST("/updateAccount", s.h.UpdateAccount)
-	// 	authenticatedRoutes.GET("/getUser/:id", s.h.GetUser)
+	// 	authenticatedRoutes.POST("/deposit", s.h.deposit)
+	// 	authenticatedRoutes.GET("/withdraw", s.h.withdraw)
 	// }
 	return s.e
 }

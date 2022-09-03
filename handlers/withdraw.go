@@ -9,7 +9,7 @@ import (
 
 type WithdrawRequest struct {
 	AccountNumber string `json:"account_number" binding:"required"`
-	Amount        int    `json:"deposit" binding:"required"`
+	Amount        int    `json:"amount" binding:"required"`
 }
 
 func (h *Handler) Withdraw(c *gin.Context) {
@@ -50,7 +50,7 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "user deposit successful",
+		"message": "user withdrawal successful",
 		"data":    existingUserData,
 	})
 }
