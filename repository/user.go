@@ -17,6 +17,10 @@ func (u *UserRepo) CreateUser(user *models.User) error {
 	return u.db.Create(&user).Error
 }
 
+func (u *UserRepo) UpdateUserByID(id string, user *models.User) error {
+	return u.db.Model(models.User{}).Where("id = ?", id).Updates(&user).Error
+}
+
 func (u *UserRepo) GetUserByID(id string) (*models.User, error) {
 	var user models.User
 	db := u.db.Where("id = ?", id).Find(&user)
@@ -24,8 +28,4 @@ func (u *UserRepo) GetUserByID(id string) (*models.User, error) {
 		return nil, db.Error
 	}
 	return &user, db.Error
-}
-
-func (u *UserRepo) UpdateUserByID(id string, user *models.User) error {
-	return u.db.Model(models.User{}).Where("id = ?", id).Updates(&user).Error
 }
