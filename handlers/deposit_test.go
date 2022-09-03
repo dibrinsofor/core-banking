@@ -1,7 +1,6 @@
 package handlers_test
 
 import (
-	"fmt"
 	"testing"
 
 	"github.com/dibrinsofor/core-banking/handlers"
@@ -19,7 +18,6 @@ func TestDeposit200(t *testing.T) {
 
 	verifyResponse := handlers.BootstrapServer(req, routeHandlers)
 	verifyResponseBody := handlers.DecodeResponse(t, verifyResponse)
-	fmt.Print(verifyResponseBody)
 	account_number := verifyResponseBody["data"].(map[string]interface{})["account_number"]
 
 	depositRequest := handlers.MakeTestRequest(t, "/deposit", map[string]interface{}{
