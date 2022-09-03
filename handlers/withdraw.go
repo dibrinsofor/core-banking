@@ -40,7 +40,7 @@ func (h *Handler) Withdraw(c *gin.Context) {
 
 	existingUserData.Balance = existingUserData.Balance - updateUser.Amount
 
-	err = h.repo.UserRepo.UpdateUserByID(updateUser.AccountNumber, existingUserData)
+	err = h.repo.UserRepo.UpdateUserByID(updateUser.AccountNumber, existingUserData, "WITHDRAW", "")
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{

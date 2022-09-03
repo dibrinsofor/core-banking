@@ -52,7 +52,7 @@ func (h *Handler) Transfer(c *gin.Context) {
 	existingUserData.Balance = existingUserData.Balance - transferReq.Amount
 	recipientData.Balance = recipientData.Balance + transferReq.Amount
 
-	err = h.repo.UserRepo.UpdateUsersByID(existingUserData.AccountNumber, recipientData.AccountNumber, existingUserData, recipientData)
+	err = h.repo.UserRepo.UpdateUsersByID(existingUserData.AccountNumber, recipientData.AccountNumber, existingUserData, recipientData, "TRANSFER")
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
