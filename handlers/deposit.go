@@ -47,7 +47,4 @@ func (h *Handler) Deposit(c *gin.Context) {
 		"message": "user deposit successful",
 		"data":    existingUserData,
 	})
-
-	// find users account
-	// update balance
 }
