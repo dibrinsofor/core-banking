@@ -7,13 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type DepositRequestPayload struct {
+type DepositRequest struct {
 	AccountNumber string `json:"account_number" binding:"required"`
-	Deposit       int    `json:"deposit" binding:"required"`
+	Amount        int    `json:"deposit" binding:"required"`
 }
 
 func (h *Handler) Deposit(c *gin.Context) {
-	var updateUser DepositRequestPayload
+	var updateUser DepositRequest
 
 	if err := c.BindJSON(&updateUser); err != nil {
 		log.Println(err)
@@ -32,7 +32,7 @@ func (h *Handler) Deposit(c *gin.Context) {
 		return
 	}
 
-	existingUserData.Balance = existingUserData.Balance + updateUser.Deposit
+	existingUserData.Balance = existingUserData.Balance + updateUser.Amount
 
 	err = h.repo.UserRepo.UpdateUserByID(updateUser.AccountNumber, existingUserData)
 	if err != nil {
