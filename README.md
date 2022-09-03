@@ -9,6 +9,11 @@ a minimal implementation of a banking service, with support for:
 - [ ] idempotent transactions
 
 ### Setup
+- clone the contents of `.env.sample` into `.env` and `.env.test` files
+- build and run using `docker-compose up` and `docker-compose up --build` if you need to make any changes
+- navigate into the `/migrations` dir and run goose migrations with `goose postgres "name=postgres password=password host=localhost:6543 dbname=corebanking sslmode=disable" up`, changing the dbname to corebanking_test for the test db
+- hack away!
+
 
 ### API Docs (Endpoints)
 
