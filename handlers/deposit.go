@@ -38,7 +38,7 @@ func (h *Handler) Deposit(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "failed to update user",
+			"message": "uhoh, something went wrong. failed to perform transaction.",
 		})
 		return
 	}
