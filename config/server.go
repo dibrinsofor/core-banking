@@ -38,6 +38,7 @@ func (s *Server) SetupRoutes() *gin.Engine {
 	s.e.POST("/deposit", s.h.Deposit)
 	s.e.POST("/withdraw", s.h.Withdraw)
 	s.e.POST("/transfer", s.h.Transfer)
+	s.e.GET("/transHistory", s.h.TransactionHistory)
 
 	// authenticatedRoutes := s.e.Group("/auth").Use(middlewares.AuthorizeJWT())
 	// {
