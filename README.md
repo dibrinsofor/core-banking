@@ -34,7 +34,7 @@ Sample response
         "account_number": "6eb55ee8-cdcb-4819-9301-0ab1c3a5cb21",
         "name": "Dibri Nsofor",
         "email": "dibrinsofor@gmail.com",
-        "balance": 0,
+        "balance": "$0",
         "created_at": "2022-09-03T10:41:29.5850223+01:00"
     },
     "message": "user successfully created"
@@ -58,7 +58,7 @@ Sample response
         "account_number": "6eb55ee8-cdcb-4819-9301-0ab1c3a5cb21",
         "name": "Dibri Nsofor",
         "email": "dibrinsofor@gmail.com",
-        "balance": 150000,
+        "balance": "150000",
         "created_at": "2022-09-03T10:41:29.585022Z"
     },
     "message": "user withdrawal successful"

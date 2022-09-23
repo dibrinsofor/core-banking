@@ -7,7 +7,7 @@ type Transaction struct {
 	AccountNumber   string    `json:"account_number"`
 	ActionPerformed string    `json:"action_performed"`
 	Recipient       string    `json:"recipient"`
-	Balance         int       `json:"balance"`
+	Balance         float64   `json:"balance"`
 	CreatedAt       time.Time `json:"created_at" sql:"type:timestamp without time zone"`
 	CreatedDate     string    `json:"created_date"`
 }

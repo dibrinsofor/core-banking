@@ -1,7 +1,7 @@
 package handlers
 
 import (
-	"github.com/dibrinsofor/core-banking/repository"
+	"github.com/dibrinsofor/core-banking/internal/repository"
 )
 
 type Handler struct {

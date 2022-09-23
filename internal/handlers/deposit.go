@@ -7,13 +7,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type WithdrawRequest struct {
-	AccountNumber string `json:"account_number" binding:"required"`
-	Amount        int    `json:"amount" binding:"required"`
+type DepositRequest struct {
+	AccountNumber string  `json:"account_number" binding:"required"`
+	Amount        float64 `json:"amount" binding:"required"`
 }
 
-func (h *Handler) Withdraw(c *gin.Context) {
-	var updateUser WithdrawRequest
+func (h *Handler) Deposit(c *gin.Context) {
+	var updateUser DepositRequest
 
 	if err := c.BindJSON(&updateUser); err != nil {
 		log.Println(err)
@@ -32,15 +32,9 @@ func (h *Handler) Withdraw(c *gin.Context) {
 		return
 	}
 
-	if existingUserData.Balance < updateUser.Amount {
-		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "balance too low to process payment",
-		})
-	}
+	existingUserData.Balance = existingUserData.Balance + updateUser.Amount
 
-	existingUserData.Balance = existingUserData.Balance - updateUser.Amount
-
-	err = h.repo.UserRepo.UpdateUserByID(updateUser.AccountNumber, existingUserData, "WITHDRAW", "")
+	err = h.repo.UserRepo.UpdateUserByID(updateUser.AccountNumber, existingUserData, "DEPOSIT", "")
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -50,7 +44,7 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	}
 
 	c.JSON(http.StatusOK, gin.H{
-		"message": "user withdrawal successful",
+		"message": "user deposit successful",
 		"data":    existingUserData,
 	})
 }

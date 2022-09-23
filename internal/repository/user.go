@@ -3,7 +3,7 @@ package repository
 import (
 	"time"
 
-	"github.com/dibrinsofor/core-banking/models"
+	"github.com/dibrinsofor/core-banking/internal/models"
 	"gorm.io/gorm"
 )
 
@@ -15,11 +15,11 @@ func NewUserRepo(db *gorm.DB) *UserRepo {
 	return &UserRepo{db: db}
 }
 
-func (u *UserRepo) CreateUser(user *models.User) error {
+func (u *UserRepo) CreateUser(user *models.AccountInfo) error {
 	return u.db.Create(&user).Error
 }
 
-func (u *UserRepo) UpdateUserByID(id string, user *models.User, action string, recipient string) error {
+func (u *UserRepo) UpdateUserByID(id string, user *models.AccountInfo, action string, recipient string) error {
 	tx := u.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -31,7 +31,7 @@ func (u *UserRepo) UpdateUserByID(id string, user *models.User, action string, r
 		return err
 	}
 
-	if err := u.db.Model(models.User{}).Where("account_number = ?", id).Updates(&user).Error; err != nil {
+	if err := u.db.Model(models.AccountInfo{}).Where("account_number = ?", id).Updates(&user).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -42,8 +42,8 @@ func (u *UserRepo) UpdateUserByID(id string, user *models.User, action string, r
 	return tx.Commit().Error
 }
 
-func (u *UserRepo) GetUserByID(id string) (*models.User, error) {
-	var user models.User
+func (u *UserRepo) GetUserByID(id string) (*models.AccountInfo, error) {
+	var user models.AccountInfo
 	db := u.db.Where("account_number = ?", id).Find(&user)
 	if db.Error != nil {
 		return nil, db.Error
@@ -51,7 +51,7 @@ func (u *UserRepo) GetUserByID(id string) (*models.User, error) {
 	return &user, db.Error
 }
 
-func (u *UserRepo) UpdateUsersByID(id1 string, id2 string, user1 *models.User, user2 *models.User, action string) error {
+func (u *UserRepo) UpdateUsersByID(id1 string, id2 string, user1 *models.AccountInfo, user2 *models.AccountInfo, action string) error {
 	tx := u.db.Begin()
 	defer func() {
 		if r := recover(); r != nil {
@@ -63,11 +63,11 @@ func (u *UserRepo) UpdateUsersByID(id1 string, id2 string, user1 *models.User, u
 		return err
 	}
 
-	if err := u.db.Model(models.User{}).Where("account_number = ?", id1).Updates(&user1).Error; err != nil {
+	if err := u.db.Model(models.AccountInfo{}).Where("account_number = ?", id1).Updates(&user1).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
-	if err := u.db.Model(models.User{}).Where("account_number = ?", id2).Updates(&user2).Error; err != nil {
+	if err := u.db.Model(models.AccountInfo{}).Where("account_number = ?", id2).Updates(&user2).Error; err != nil {
 		tx.Rollback()
 		return err
 	}
@@ -80,7 +80,7 @@ func (u *UserRepo) UpdateUsersByID(id1 string, id2 string, user1 *models.User, u
 	return tx.Commit().Error
 }
 
-func InsertTransaction(user *models.User, action string, recipient string) *models.Transaction {
+func InsertTransaction(user *models.AccountInfo, action string, recipient string) *models.Transaction {
 	t := time.Now()
 	t1 := t.Format("2006-01-02")
 	trans := models.Transaction{

@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/dibrinsofor/core-banking/handlers"
+	"github.com/dibrinsofor/core-banking/internal/handlers"
 	"github.com/jaswdr/faker"
 	"gotest.tools/v3/assert"
 )

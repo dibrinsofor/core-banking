@@ -8,9 +8,9 @@ import (
 )
 
 type TransferRequest struct {
-	AccountNumber string `json:"account_number" binding:"required"`
-	Recipient     string `json:"recipient" binding:"required"`
-	Amount        int    `json:"amount" binding:"required"`
+	AccountNumber string  `json:"account_number" binding:"required"`
+	Recipient     string  `json:"recipient" binding:"required"`
+	Amount        float64 `json:"amount" binding:"required"`
 }
 
 func (h *Handler) Transfer(c *gin.Context) {

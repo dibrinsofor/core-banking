@@ -7,8 +7,8 @@ import (
 	"os"
 	"os/signal"
 
-	"github.com/dibrinsofor/core-banking/handlers"
-	"github.com/dibrinsofor/core-banking/middlewares"
+	"github.com/dibrinsofor/core-banking/internal/handlers"
+	"github.com/dibrinsofor/core-banking/internal/middlewares"
 	"github.com/gin-gonic/gin"
 )
 

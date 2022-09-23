@@ -3,10 +3,10 @@ package main
 import (
 	"log"
 
-	"github.com/dibrinsofor/core-banking/config"
-	"github.com/dibrinsofor/core-banking/handlers"
-	"github.com/dibrinsofor/core-banking/postgres"
-	"github.com/dibrinsofor/core-banking/repository"
+	"github.com/dibrinsofor/core-banking/internal/config"
+	"github.com/dibrinsofor/core-banking/internal/handlers"
+	"github.com/dibrinsofor/core-banking/internal/postgres"
+	"github.com/dibrinsofor/core-banking/internal/repository"
 )
 
 func main() {
