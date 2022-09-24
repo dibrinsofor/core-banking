@@ -43,6 +43,8 @@ func (h *Handler) Withdraw(c *gin.Context) {
 	}
 
 	balance, err := h.repo.UserRepo.Withdraw(existingUserData, updateUserAmount)
+	s := SanitizeAmount(balance)
+	userBalance := s.(string)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -50,9 +52,6 @@ func (h *Handler) Withdraw(c *gin.Context) {
 		})
 		return
 	}
-
-	s := SanitizeAmount(&balance)
-	userBalance := s.(string)
 
 	c.JSON(http.StatusOK, gin.H{
 		"message": "withdrawal successful",

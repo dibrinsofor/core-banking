@@ -37,6 +37,8 @@ func (h *Handler) Deposit(c *gin.Context) {
 	updateUserAmount := i.(float64)
 
 	balance, err := h.repo.UserRepo.Deposit(existingUserData, updateUserAmount)
+	s := SanitizeAmount(balance)
+	userBalance := s.(string)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -45,16 +47,13 @@ func (h *Handler) Deposit(c *gin.Context) {
 		return
 	}
 
-	s := SanitizeAmount(&balance)
-	userBalance := s.(string)
-
 	c.JSON(http.StatusOK, gin.H{
 		"message": "deposit successful",
 		"data": gin.H{
 			"account_number": updateUser.AccountNumber,
 			"name":           existingUserData.Name,
 			"balance":        userBalance,
-			"updated_at":     time.Now().Format("2017-09-07 17:06:06"),
+			"updated_at":     time.Now().Format("2006-01-02 15:04:05"),
 		},
 	})
 }

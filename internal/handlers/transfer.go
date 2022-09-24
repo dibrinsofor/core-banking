@@ -53,6 +53,8 @@ func (h *Handler) Transfer(c *gin.Context) {
 	}
 
 	newBalance, err := h.repo.UserRepo.Transfer(existingUserData, recipientData, amount)
+	v := SanitizeAmount(newBalance)
+	newBal := v.(string)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -66,9 +68,9 @@ func (h *Handler) Transfer(c *gin.Context) {
 		"data": gin.H{
 			"account_number": existingUserData.AccountNumber,
 			"name":           existingUserData.Name,
-			"balance":        newBalance,
+			"balance":        newBal,
 			"recipient_name": recipientData.Name,
-			"updated_at":     time.Now().Format("2017-09-07 17:06:06"),
+			"updated_at":     time.Now().Format("2006-01-02 15:04:05"),
 		},
 	})
 }

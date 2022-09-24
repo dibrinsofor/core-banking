@@ -15,7 +15,7 @@ type CreateUserPayload struct {
 
 func (h *Handler) CreateUser(c *gin.Context) {
 	var newUser CreateUserPayload
-	var v models.AccountInfo
+	var v models.Users
 
 	err := c.BindJSON(&newUser)
 	if err != nil {
@@ -37,6 +37,7 @@ func (h *Handler) CreateUser(c *gin.Context) {
 
 	v.Email = newUser.Email
 	v.Name = newUser.Name
+	v.Balance = 0
 
 	s := SanitizeAmount(balance)
 	userBalance := s.(string)
@@ -54,7 +55,7 @@ func (h *Handler) CreateUser(c *gin.Context) {
 			"name":           v.Name,
 			"email":          v.Email,
 			"balance":        userBalance,
-			"created_at":     v.CreatedAt.Format("2017-09-07 17:06:06"),
+			"created_at":     v.CreatedAt.Format("2006-01-02 15:04:05"),
 		},
 	})
 }

@@ -6,6 +6,7 @@ import (
 	"strconv"
 )
 
+// add support for commas. only returns part before comma
 func SanitizeAmount(i interface{}) (amount interface{}) {
 	switch v := i.(type) {
 	case float64:

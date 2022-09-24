@@ -2,7 +2,7 @@ package models
 
 import "time"
 
-type AccountInfo struct {
+type Users struct {
 	AccountNumber string    `json:"account_number" gorm:"default:gen_random_uuid()"`
 	Name          string    `json:"name"`
 	Email         string    `json:"email"`
