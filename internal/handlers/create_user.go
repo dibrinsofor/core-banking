@@ -26,9 +26,20 @@ func (h *Handler) CreateUser(c *gin.Context) {
 		return
 	}
 
+	balance, err := h.repo.UserRepo.GetUserBalance("")
+	if err != nil {
+		log.Println(err)
+		c.JSON(http.StatusInternalServerError, gin.H{
+			"message": "failed to find user",
+		})
+		return
+	}
+
 	v.Email = newUser.Email
 	v.Name = newUser.Name
-	v.AccountBalance = "$0"
+
+	s := SanitizeAmount(balance)
+	userBalance := s.(string)
 
 	if err = h.repo.UserRepo.CreateUser(&v); err != nil {
 		log.Println(err)
@@ -38,6 +49,12 @@ func (h *Handler) CreateUser(c *gin.Context) {
 
 	c.JSON(http.StatusCreated, gin.H{
 		"message": "user successfully created",
-		"data":    v,
+		"data": gin.H{
+			"account_number": v.AccountNumber,
+			"name":           v.Name,
+			"email":          v.Email,
+			"balance":        userBalance,
+			"created_at":     v.CreatedAt.Format("2017-09-07 17:06:06"),
+		},
 	})
 }

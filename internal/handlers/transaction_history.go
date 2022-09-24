@@ -30,13 +30,6 @@ func (h *Handler) TransactionHistory(c *gin.Context) {
 
 	action := c.DefaultQuery("action", "")
 	date := c.Query("date")
-	// dateTime, err := time.Parse("2006-01-02", date)
-	// if err != nil {
-	// 	c.JSON(http.StatusInternalServerError, gin.H{
-	// 		"message": "failed to parse date string",
-	// 	})
-	// 	return
-	// }
 
 	if action == "" && date == "" {
 		trans, err := h.repo.UserRepo.GetAllTransactions(reqHistory.AccountNumber)

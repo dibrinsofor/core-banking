@@ -6,7 +6,9 @@ a minimal implementation of a banking service, with support for:
 - [X] consistent transfer of funds from one user to another
 - [X] transaction history (date, amount, balance)
 - [X] transaction history filters (just deposits, withdrawal, date)
-- [ ] idempotent transactions
+- [ ] idempotent requests
+- [ ] secure withdrawals and transfers
+- [ ] introduce account tiers
 
 ### Setup
 - clone the contents of `.env.sample` into `.env` and `.env.test` files
@@ -34,7 +36,7 @@ Sample response
         "account_number": "6eb55ee8-cdcb-4819-9301-0ab1c3a5cb21",
         "name": "Dibri Nsofor",
         "email": "dibrinsofor@gmail.com",
-        "balance": "$0",
+        "account_balance": "$0",
         "created_at": "2022-09-03T10:41:29.5850223+01:00"
     },
     "message": "user successfully created"
@@ -48,7 +50,7 @@ Sample `POST` request to `/deposit` or `/withdraw` with `Content-Type`: `applica
 ```json
 {
     "account_number": "6eb55ee8-cdcb-4819-9301-0ab1c3a5cb21",
-    "amount": 12000
+    "amount": "$12000.00"
 }
 ```
 Sample response
@@ -57,11 +59,10 @@ Sample response
     "data": {
         "account_number": "6eb55ee8-cdcb-4819-9301-0ab1c3a5cb21",
         "name": "Dibri Nsofor",
-        "email": "dibrinsofor@gmail.com",
-        "balance": "150000",
-        "created_at": "2022-09-03T10:41:29.585022Z"
+        "balance": "$150000.00",
+        "created_at": "2022-09-24 17:06:06"
     },
-    "message": "user withdrawal successful"
+    "message": "user deposit successful"
 }
 ```
 

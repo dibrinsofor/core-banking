@@ -112,3 +112,112 @@ func (u *UserRepo) QueryTransactions(AccountNumber string, Action string, Date s
 	}
 	return &transaction, db.Error
 }
+
+func (u *UserRepo) GetUserBalance(AccountNumber string) (balance float64, err error) {
+	var user models.AccountInfo
+
+	if AccountNumber == "" {
+		return 0.00, nil
+	}
+
+	db := u.db.Where("account_number = ?", AccountNumber).Find(&user)
+	if db.Error != nil {
+		return 0.00, db.Error
+	}
+	return user.Balance, db.Error
+}
+
+func (u *UserRepo) Deposit(UserObj *models.AccountInfo, DepositAmount float64) (newBalance *float64, err error) {
+	tx := u.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	OldBalance, err := u.GetUserBalance(UserObj.AccountNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	UserObj.Balance = OldBalance + DepositAmount
+
+	if err := tx.Error; err != nil {
+		return nil, err
+	}
+
+	if err := u.db.Model(models.AccountInfo{}).Where("account_number = ?", UserObj.AccountNumber).Updates(&UserObj).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	if err := u.db.Create(InsertTransaction(UserObj, "DEPOSIT", "")).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	return &UserObj.Balance, tx.Commit().Error
+
+}
+
+func (u *UserRepo) Withdraw(UserObj *models.AccountInfo, WithdrawAmount float64) (newBalance *float64, err error) {
+	tx := u.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	OldBalance, err := u.GetUserBalance(UserObj.AccountNumber)
+	if err != nil {
+		return nil, err
+	}
+
+	UserObj.Balance = OldBalance - WithdrawAmount
+
+	if err := tx.Error; err != nil {
+		return nil, err
+	}
+
+	if err := u.db.Model(models.AccountInfo{}).Where("account_number = ?", UserObj.AccountNumber).Updates(&UserObj).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	if err := u.db.Create(InsertTransaction(UserObj, "WITHDRAW", "")).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	return &UserObj.Balance, tx.Commit().Error
+
+}
+
+func (u *UserRepo) Transfer(user1 *models.AccountInfo, user2 *models.AccountInfo, transferAmount float64) (newBalance *float64, err error) {
+	tx := u.db.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+		}
+	}()
+
+	if err := tx.Error; err != nil {
+		return nil, err
+	}
+
+	// perform transactions
+	user1.Balance = user1.Balance - transferAmount
+	user2.Balance = user2.Balance + transferAmount
+
+	if err := u.db.Model(models.AccountInfo{}).Where("account_number = ?", user1.AccountNumber).Updates(&user1).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+	if err := u.db.Model(models.AccountInfo{}).Where("account_number = ?", user2.AccountNumber).Updates(&user2).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	if err := u.db.Create(InsertTransaction(user1, "TRANSFER", user2.AccountNumber)).Error; err != nil {
+		tx.Rollback()
+		return nil, err
+	}
+
+	return &user1.Balance, tx.Commit().Error
+}

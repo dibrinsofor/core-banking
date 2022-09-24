@@ -3,14 +3,15 @@ package handlers
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
 
 type TransferRequest struct {
-	AccountNumber string  `json:"account_number" binding:"required"`
-	Recipient     string  `json:"recipient" binding:"required"`
-	Amount        float64 `json:"amount" binding:"required"`
+	AccountNumber string `json:"account_number" binding:"required"`
+	Recipient     string `json:"recipient" binding:"required"`
+	Amount        string `json:"amount" binding:"required"`
 }
 
 func (h *Handler) Transfer(c *gin.Context) {
@@ -28,7 +29,7 @@ func (h *Handler) Transfer(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "failed to find user",
+			"message": "failed to find user. check documentation: https://github.com/dibrinsofor/core-banking/blob/master/Readme.MD",
 		})
 		return
 	}
@@ -37,33 +38,37 @@ func (h *Handler) Transfer(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "failed to find user",
+			"message": "failed to find user. check documentation: https://github.com/dibrinsofor/core-banking/blob/master/Readme.MD",
 		})
 		return
 	}
 
-	if existingUserData.Balance < transferReq.Amount {
+	i := SanitizeAmount(transferReq.Amount)
+	amount := i.(float64)
+
+	if existingUserData.Balance < amount {
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "balance too low to process payment",
+			"message": "balance too low to process payment. check documentation: https://github.com/dibrinsofor/core-banking/blob/master/Readme.MD",
 		})
 	}
 
-	// bundle db changes into a pipeline if something fails nothing should be processed
-	existingUserData.Balance = existingUserData.Balance - transferReq.Amount
-	recipientData.Balance = recipientData.Balance + transferReq.Amount
-
-	err = h.repo.UserRepo.UpdateUsersByID(existingUserData.AccountNumber, recipientData.AccountNumber, existingUserData, recipientData, "TRANSFER")
+	newBalance, err := h.repo.UserRepo.Transfer(existingUserData, recipientData, amount)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "uhoh, something went wrong. failed to perform transaction.",
+			"message": "uhoh, failed to complete transfer. check documentation: https://github.com/dibrinsofor/core-banking/blob/master/Readme.MD",
 		})
 		return
 	}
 
-	// maybe just send acc number and updated balance
 	c.JSON(http.StatusOK, gin.H{
 		"message": "transfer successful",
-		"data":    existingUserData,
+		"data": gin.H{
+			"account_number": existingUserData.AccountNumber,
+			"name":           existingUserData.Name,
+			"balance":        newBalance,
+			"recipient_name": recipientData.Name,
+			"updated_at":     time.Now().Format("2017-09-07 17:06:06"),
+		},
 	})
 }
