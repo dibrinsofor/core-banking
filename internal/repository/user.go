@@ -5,6 +5,7 @@ import (
 
 	"github.com/dibrinsofor/core-banking/internal/models"
 	"gorm.io/gorm"
+	"gorm.io/gorm/clause"
 )
 
 type UserRepo struct {
@@ -31,6 +32,8 @@ func (u *UserRepo) UpdateUserByID(id string, user *models.Users, action string, 
 		return err
 	}
 
+	u.db.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&user)
+
 	if err := u.db.Model(models.Users{}).Where("account_number = ?", id).Updates(&user).Error; err != nil {
 		tx.Rollback()
 		return err
@@ -51,6 +54,15 @@ func (u *UserRepo) GetUserByID(id string) (*models.Users, error) {
 	return &user, db.Error
 }
 
+func (u *UserRepo) GetUserByEmail(email string) (*models.Users, error) {
+	var user models.Users
+	db := u.db.Where("email = ?", email).Find(&user)
+	if db.Error != nil {
+		return nil, db.Error
+	}
+	return &user, db.Error
+}
+
 func (u *UserRepo) UpdateUsersByID(id1 string, id2 string, user1 *models.Users, user2 *models.Users, action string) error {
 	tx := u.db.Begin()
 	defer func() {
@@ -60,6 +72,15 @@ func (u *UserRepo) UpdateUsersByID(id1 string, id2 string, user1 *models.Users, 
 	}()
 
 	if err := tx.Error; err != nil {
+		return err
+	}
+
+	if err := u.db.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&user1).Error; err != nil {
+		tx.Rollback()
+		return err
+	}
+	if err := u.db.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&user2).Error; err != nil {
+		tx.Rollback()
 		return err
 	}
 
@@ -140,13 +161,16 @@ func (u *UserRepo) Deposit(UserObj *models.Users, DepositAmount float64) (newBal
 		return 0, err
 	}
 
-	UserObj.Balance = OldBalance + DepositAmount
-
 	if err := tx.Error; err != nil {
 		return 0, err
 	}
 
-	if err := u.db.Model(models.Users{}).Where("account_number = ?", UserObj.AccountNumber).Updates(&UserObj).Error; err != nil {
+	if err := u.db.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&UserObj).Error; err != nil {
+		tx.Rollback()
+		return 0, err
+	}
+
+	if err := u.db.Model(models.Users{}).Where("account_number = ?", UserObj.AccountNumber).Update("balance", (OldBalance + DepositAmount)).Error; err != nil {
 		tx.Rollback()
 		return 0, err
 	}
@@ -154,7 +178,13 @@ func (u *UserRepo) Deposit(UserObj *models.Users, DepositAmount float64) (newBal
 		tx.Rollback()
 		return 0, err
 	}
-	return UserObj.Balance, tx.Commit().Error
+
+	NewBalance, err := u.GetUserBalance(UserObj.AccountNumber)
+	if err != nil {
+		return 0, err
+	}
+
+	return NewBalance, tx.Commit().Error
 
 }
 
@@ -171,13 +201,16 @@ func (u *UserRepo) Withdraw(UserObj *models.Users, WithdrawAmount float64) (newB
 		return 0, err
 	}
 
-	UserObj.Balance = OldBalance - WithdrawAmount
-
 	if err := tx.Error; err != nil {
 		return 0, err
 	}
 
-	if err := u.db.Model(models.Users{}).Where("account_number = ?", UserObj.AccountNumber).Updates(&UserObj).Error; err != nil {
+	if err := u.db.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&UserObj).Error; err != nil {
+		tx.Rollback()
+		return 0, err
+	}
+
+	if err := u.db.Model(models.Users{}).Where("account_number = ?", UserObj.AccountNumber).Update("balance", (OldBalance - WithdrawAmount)).Error; err != nil {
 		tx.Rollback()
 		return 0, err
 	}
@@ -185,7 +218,14 @@ func (u *UserRepo) Withdraw(UserObj *models.Users, WithdrawAmount float64) (newB
 		tx.Rollback()
 		return 0, err
 	}
-	return UserObj.Balance, tx.Commit().Error
+
+	// alternative would be Gorm clauses
+	NewBalance, err := u.GetUserBalance(UserObj.AccountNumber)
+	if err != nil {
+		return 0, err
+	}
+
+	return NewBalance, tx.Commit().Error
 
 }
 
@@ -201,23 +241,37 @@ func (u *UserRepo) Transfer(user1 *models.Users, user2 *models.Users, transferAm
 		return 0, err
 	}
 
-	// perform transactions
-	user1.Balance = user1.Balance - transferAmount
-	user2.Balance = user2.Balance + transferAmount
-
-	if err := u.db.Model(models.Users{}).Where("account_number = ?", user1.AccountNumber).Updates(&user1).Error; err != nil {
+	if err := u.db.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&user1).Error; err != nil {
 		tx.Rollback()
 		return 0, err
 	}
-	if err := u.db.Model(models.Users{}).Where("account_number = ?", user2.AccountNumber).Updates(&user2).Error; err != nil {
+	if err := u.db.Clauses(clause.Locking{Strength: "UPDATE"}).Find(&user2).Error; err != nil {
 		tx.Rollback()
 		return 0, err
 	}
 
-	if err := u.db.Create(InsertTransaction(user1, "TRANSFER", user2.AccountNumber)).Error; err != nil {
-		tx.Rollback()
+	// additional check to see if the user still has the money to perform trans
+	if user1.Balance > transferAmount {
+		// perform transactions
+		if err := u.db.Model(models.Users{}).Where("account_number = ?", user1.AccountNumber).Update("balance", (user1.Balance - transferAmount)).Error; err != nil {
+			tx.Rollback()
+			return 0, err
+		}
+		if err := u.db.Model(models.Users{}).Where("account_number = ?", user2.AccountNumber).Update("balance", (user2.Balance + transferAmount)).Error; err != nil {
+			tx.Rollback()
+			return 0, err
+		}
+
+		if err := u.db.Create(InsertTransaction(user1, "TRANSFER", user2.AccountNumber)).Error; err != nil {
+			tx.Rollback()
+			return 0, err
+		}
+	}
+
+	NewBalance, err := u.GetUserBalance(user1.AccountNumber)
+	if err != nil {
 		return 0, err
 	}
 
-	return user1.Balance, tx.Commit().Error
+	return NewBalance, tx.Commit().Error
 }
