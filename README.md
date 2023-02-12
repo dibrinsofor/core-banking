@@ -7,7 +7,8 @@ a minimal implementation of a banking service, with support for:
 - [X] transaction history (date, amount, balance)
 - [X] transaction history filters (just deposits, withdrawal, date)
 - [ ] idempotent requests
-- [ ] introduce account tiers
+<!--- - [ ] secure withdrawals and transfers
+- [ ] introduce account tiers --->
 
 ### Setup
 - clone the contents of `.env.sample` into `.env` and `.env.test` files
@@ -71,20 +72,20 @@ Sample `POST` request to `/createAccount` with `Content-Type`: `application/json
 
 ```json
 {
-    "account_number": "eb155b3d-5a77-4ab5-969d-19955abc1f1b",
-    "recipient": "934ec732-6191-43f8-96b0-716b8e142346",
-    "amount": "$500.00"
+    "account_number": "6eb55ee8-cdcb-4819-9301-0ab1c3a5cb21",
+    "recipient": "017d7b89-8d38-488a-8e0a-8289dbbb427e",
+    "amount": 20000
 }
 ```
 Sample response
 ```json
 {
     "data": {
-        "account_number": "eb155b3d-5a77-4ab5-969d-19955abc1f1b",
-        "balance": "$11505.00",
-        "name": "James Worthy",
-        "recipient_name": "Dibri Nsofor",
-        "updated_at": "2022-09-24 16:10:38"
+        "account_number": "6eb55ee8-cdcb-4819-9301-0ab1c3a5cb21",
+        "name": "Dibri Nsofor",
+        "email": "dibrinsofor@gmail.com",
+        "balance": 50000,
+        "created_at": "2022-09-03T10:41:29.585022Z"
     },
     "message": "transfer successful"
 }
@@ -104,21 +105,28 @@ Sample response (**cut short to keep this pithy**)
 {
     "data": [
         {
-            "id": "97cd4420-a6c5-4c64-ab69-e6a9678d392d",
-            "account_number": "eb155b3d-5a77-4ab5-969d-19955abc1f1b",
-            "action_performed": "DEPOSIT",
-            "balance": "$19.00",
-            "created_at": "2022-09-24T16:08:31.434155Z",
-            "created_date": "2022-09-24"
+            "id": "416ef053-1f5b-43d2-9478-10d6a9c98fce",
+            "account_number": "9cbf9d63-8510-4f20-928a-80a75818ebb1",
+            "action_performed": "Deposit",
+            "recipient": "",
+            "balance": 12000,
+            "created_at": "2022-09-03T13:29:42.94933Z"
         },
         {
-            "id": "3eceb330-1ae7-4183-a893-22275144eb76",
-            "account_number": "eb155b3d-5a77-4ab5-969d-19955abc1f1b",
-            "action_performed": "TRANSFER",
-            "recipient": "934ec732-6191-43f8-96b0-716b8e142346",
-            "balance": "$11,505.00",
-            "created_at": "2022-09-24T16:10:38.787012Z",
-            "created_date": "2022-09-24"
+            "id": "0e2c72b8-2b42-4fff-9d5e-71f968bdf3af",
+            "account_number": "9cbf9d63-8510-4f20-928a-80a75818ebb1",
+            "action_performed": "Deposit",
+            "recipient": "",
+            "balance": 24000,
+            "created_at": "2022-09-03T13:29:50.259873Z"
+        },
+        {
+            "id": "6d20b744-b4ec-4f33-95b5-c517bbc775dc",
+            "account_number": "9cbf9d63-8510-4f20-928a-80a75818ebb1",
+            "action_performed": "WITHDRAW",
+            "recipient": "",
+            "balance": 103400,
+            "created_at": "2022-09-03T14:05:28.708591Z"
         }
     ],
     "message": "successfully retrieved 10 most recent transactions"
@@ -139,13 +147,31 @@ Sample response (**cut short for readability sake**)
 {
     "data": [
         {
-            "id": "3eceb330-1ae7-4183-a893-22275144eb76",
-            "account_number": "eb155b3d-5a77-4ab5-969d-19955abc1f1b",
-            "action_performed": "TRANSFER",
-            "recipient": "934ec732-6191-43f8-96b0-716b8e142346",
-            "balance": "$11,505.00",
-            "created_at": "2022-09-24T16:10:38.787012Z",
-            "created_date": "2022-09-24"
+            "id": "2b69db60-d99a-46b6-8468-bbc2745a4a5f",
+            "account_number": "9cbf9d63-8510-4f20-928a-80a75818ebb1",
+            "action_performed": "DEPOSIT",
+            "recipient": "",
+            "balance": 329492080,
+            "created_at": "2022-09-03T16:06:36.625368Z",
+            "created_date": "2022-09-03"
+        },
+        {
+            "id": "0b335e05-8645-43e5-8ba8-b5f4f446dac2",
+            "account_number": "9cbf9d63-8510-4f20-928a-80a75818ebb1",
+            "action_performed": "DEPOSIT",
+            "recipient": "",
+            "balance": 389385560,
+            "created_at": "2022-09-03T16:07:10.709543Z",
+            "created_date": "2022-09-03"
+        },
+        {
+            "id": "a6182b27-3dd1-4d35-a281-2adb4eb93c10",
+            "account_number": "9cbf9d63-8510-4f20-928a-80a75818ebb1",
+            "action_performed": "DEPOSIT",
+            "recipient": "",
+            "balance": 389385572,
+            "created_at": "2022-09-03T16:07:12.816867Z",
+            "created_date": "2022-09-03"
         }
     ],
     "message": "successfully retrieved transactions"
