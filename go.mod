@@ -40,6 +40,7 @@ require (
 require (
 	github.com/gin-contrib/cors v1.4.0
 	github.com/gin-gonic/gin v1.8.1
+	github.com/go-redis/redis v6.15.9+incompatible
 	github.com/jaswdr/faker v1.15.0
 	github.com/jinzhu/inflection v1.0.0 // indirect
 	github.com/jinzhu/now v1.1.4 // indirect

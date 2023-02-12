@@ -26,7 +26,7 @@ func (h *Handler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	balance, err := h.repo.UserRepo.GetUserBalance("")
+	isUserExists, err := h.repo.UserRepo.GetUserByEmail(newUser.Email)
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
@@ -35,27 +35,51 @@ func (h *Handler) CreateUser(c *gin.Context) {
 		return
 	}
 
-	v.Email = newUser.Email
-	v.Name = newUser.Name
-	v.Balance = 0
-
-	s := SanitizeAmount(balance)
-	userBalance := s.(string)
-
-	if err = h.repo.UserRepo.CreateUser(&v); err != nil {
-		log.Println(err)
-		c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to create user"})
+	if isUserExists.AccountNumber != "" {
+		c.AbortWithStatusJSON(http.StatusCreated, gin.H{
+			"message": "user already exists",
+			"data": gin.H{
+				"account_number": isUserExists.AccountNumber,
+				"name":           isUserExists.Name,
+				"email":          isUserExists.Email,
+				"balance":        isUserExists.Balance,
+				"created_at":     isUserExists.CreatedAt.Format("2006-01-02 15:04:05"),
+			},
+		})
 		return
+	} else {
+		balance, err := h.repo.UserRepo.GetUserBalance("")
+		if err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{
+				"message": "failed to find user",
+			})
+			return
+		}
+
+		v.Email = newUser.Email
+		v.Name = newUser.Name
+		v.Balance = 0
+
+		s := SanitizeAmount(balance)
+		userBalance := s.(string)
+
+		if err = h.repo.UserRepo.CreateUser(&v); err != nil {
+			log.Println(err)
+			c.JSON(http.StatusInternalServerError, gin.H{"message": "failed to create user"})
+			return
+		}
+
+		c.JSON(http.StatusCreated, gin.H{
+			"message": "user successfully created",
+			"data": gin.H{
+				"account_number": v.AccountNumber,
+				"name":           v.Name,
+				"email":          v.Email,
+				"balance":        userBalance,
+				"created_at":     v.CreatedAt.Format("2006-01-02 15:04:05"),
+			},
+		})
 	}
 
-	c.JSON(http.StatusCreated, gin.H{
-		"message": "user successfully created",
-		"data": gin.H{
-			"account_number": v.AccountNumber,
-			"name":           v.Name,
-			"email":          v.Email,
-			"balance":        userBalance,
-			"created_at":     v.CreatedAt.Format("2006-01-02 15:04:05"),
-		},
-	})
 }

@@ -7,7 +7,6 @@ a minimal implementation of a banking service, with support for:
 - [X] transaction history (date, amount, balance)
 - [X] transaction history filters (just deposits, withdrawal, date)
 - [ ] idempotent requests
-- [ ] secure withdrawals and transfers
 - [ ] introduce account tiers
 
 ### Setup

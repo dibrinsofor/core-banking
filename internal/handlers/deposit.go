@@ -1,10 +1,12 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"net/http"
 	"time"
 
+	redistest "github.com/dibrinsofor/core-banking/internal/redis"
 	"github.com/gin-gonic/gin"
 )
 
@@ -42,12 +44,12 @@ func (h *Handler) Deposit(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "uhoh, somethingwent wrong. Failed to make deposit. check documentation: https://github.com/dibrinsofor/core-banking/blob/master/Readme.MD",
+			"message": "uhoh, something went wrong. Failed to make deposit. check documentation: https://github.com/dibrinsofor/core-banking/blob/master/Readme.MD",
 		})
 		return
 	}
 
-	c.JSON(http.StatusOK, gin.H{
+	uData := gin.H{
 		"message": "deposit successful",
 		"data": gin.H{
 			"account_number": updateUser.AccountNumber,
@@ -55,5 +57,23 @@ func (h *Handler) Deposit(c *gin.Context) {
 			"balance":        userBalance,
 			"updated_at":     time.Now().Format("2006-01-02 15:04:05"),
 		},
-	})
+	}
+
+	key := c.Request.Header.Get(redistest.DefaultKeyName)
+	fmt.Print(key)
+
+	fmt.Printf("\nExpires at: %v\n", time.Now())
+
+	userInstance := &redistest.Idempotency{
+		KeyName:         key,
+		CreatedAt:       time.Now(),
+		CacheExpiration: time.Now().Add(time.Hour * 2),
+		SavedResponse:   uData,
+	}
+
+	if key != "" {
+		redistest.AddIdempotencyKey(userInstance)
+	}
+
+	c.JSON(http.StatusOK, uData)
 }

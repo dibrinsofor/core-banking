@@ -9,6 +9,7 @@ import (
 
 	"github.com/dibrinsofor/core-banking/internal/handlers"
 	"github.com/dibrinsofor/core-banking/internal/middlewares"
+	redistest "github.com/dibrinsofor/core-banking/internal/redis"
 	"github.com/gin-gonic/gin"
 )
 
@@ -35,9 +36,9 @@ func (s *Server) SetupRoutes() *gin.Engine {
 
 	s.e.GET("/healthcheck", s.h.Healthcheck)
 	s.e.POST("/createAccount", s.h.CreateUser)
-	s.e.POST("/deposit", s.h.Deposit)
-	s.e.POST("/withdraw", s.h.Withdraw)
-	s.e.POST("/transfer", s.h.Transfer)
+	s.e.POST("/deposit", s.h.Deposit).Use(redistest.VerifyIdempotencyKey())
+	s.e.POST("/withdraw", s.h.Withdraw).Use(redistest.VerifyIdempotencyKey())
+	s.e.POST("/transfer", s.h.Transfer).Use(redistest.VerifyIdempotencyKey())
 	s.e.GET("/transHistory", s.h.TransactionHistory)
 
 	// authenticatedRoutes := s.e.Group("/auth").Use(middlewares.AuthorizeJWT())

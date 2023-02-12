@@ -8,6 +8,7 @@ import (
 	"github.com/dibrinsofor/core-banking/internal/config"
 	"github.com/dibrinsofor/core-banking/internal/handlers"
 	"github.com/dibrinsofor/core-banking/internal/postgres"
+	redistest "github.com/dibrinsofor/core-banking/internal/redis"
 	"github.com/dibrinsofor/core-banking/internal/repository"
 	"github.com/gin-gonic/gin"
 	"github.com/jaswdr/faker"
@@ -28,7 +29,13 @@ func TestMain(m *testing.M) {
 	}
 
 	repo := repository.New(db)
-	handler := handlers.New(repo)
+
+	rdb, err := redistest.Init()
+	if err != nil {
+		log.Fatalf("Unable to connect to redis store: %v", err)
+	}
+
+	handler := handlers.New(repo, rdb)
 	srv := config.New(handler)
 	routeHandlers = srv.SetupRoutes()
 	os.Exit(m.Run())
