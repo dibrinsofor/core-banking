@@ -1,12 +1,10 @@
 package handlers
 
 import (
-	"fmt"
 	"log"
 	"net/http"
 	"time"
 
-	redistest "github.com/dibrinsofor/core-banking/internal/redis"
 	"github.com/gin-gonic/gin"
 )
 
@@ -59,21 +57,18 @@ func (h *Handler) Deposit(c *gin.Context) {
 		},
 	}
 
-	key := c.Request.Header.Get(redistest.DefaultKeyName)
-	fmt.Print(key)
+	// key := c.Request.Header.Get(redistest.DefaultKeyName)
 
-	fmt.Printf("\nExpires at: %v\n", time.Now())
+	// userInstance := &redistest.Idempotency{
+	// 	KeyName:         key,
+	// 	CreatedAt:       time.Now(),
+	// 	CacheExpiration: time.Now().Add(time.Hour * 2),
+	// 	SavedResponse:   uData,
+	// }
 
-	userInstance := &redistest.Idempotency{
-		KeyName:         key,
-		CreatedAt:       time.Now(),
-		CacheExpiration: time.Now().Add(time.Hour * 2),
-		SavedResponse:   uData,
-	}
-
-	if key != "" {
-		redistest.AddIdempotencyKey(userInstance)
-	}
+	// if key != "" {
+	// 	redistest.AddIdempotencyKey(userInstance)
+	// }
 
 	c.JSON(http.StatusOK, uData)
 }

@@ -31,13 +31,14 @@ func (s *Server) SetupMiddlewares(m []gin.HandlerFunc) {
 }
 
 func (s *Server) SetupRoutes() *gin.Engine {
-	mw := []gin.HandlerFunc{middlewares.Cors()}
+	mw := []gin.HandlerFunc{middlewares.Cors(), middlewares.Timeout(s.h.TimeoutDuration)}
 	s.SetupMiddlewares(mw)
 
 	s.e.GET("/healthcheck", s.h.Healthcheck)
+	s.e.GET("/timeout", s.h.Timeout)
 	s.e.POST("/createAccount", s.h.CreateUser)
-	s.e.POST("/deposit", s.h.Deposit).Use(redistest.VerifyIdempotencyKey())
-	s.e.POST("/withdraw", s.h.Withdraw).Use(redistest.VerifyIdempotencyKey())
+	s.e.POST("/deposit", s.h.Deposit)
+	s.e.POST("/withdraw", s.h.Withdraw)
 	s.e.POST("/transfer", s.h.Transfer).Use(redistest.VerifyIdempotencyKey())
 	s.e.GET("/transHistory", s.h.TransactionHistory)
 
