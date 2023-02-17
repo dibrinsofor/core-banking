@@ -46,7 +46,7 @@ func TestMain(m *testing.M) {
 	os.Exit(m.Run())
 }
 
-func TestCreateAccountEndpoint(t *testing.T) {
+func TestCreateAccount200(t *testing.T) {
 	f := faker.New()
 
 	req := handlers.MakeTestRequest(t, "/createAccount", map[string]interface{}{
@@ -58,4 +58,27 @@ func TestCreateAccountEndpoint(t *testing.T) {
 	responseBody := handlers.DecodeResponse(t, response)
 
 	assert.Equal(t, "user successfully created", responseBody["message"])
+}
+
+func TestCreateAccountDuplicate(t *testing.T) {
+	f := faker.New()
+
+	req := handlers.MakeTestRequest(t, "/createAccount", map[string]interface{}{
+		"name":  f.Person().Name(),
+		"email": f.Person().Contact().Email,
+	}, "POST")
+
+	response := handlers.BootstrapServer(req, routeHandlers)
+	rspBody := handlers.DecodeResponse(t, response)
+	name := rspBody["data"].(map[string]interface{})["name"]
+	email := rspBody["data"].(map[string]interface{})["email"]
+
+	dupReq := handlers.MakeTestRequest(t, "/createAccount", map[string]interface{}{
+		"name":  name,
+		"email": email,
+	}, "POST")
+
+	dupResponse := handlers.BootstrapServer(dupReq, routeHandlers)
+	dupResponseBody := handlers.DecodeResponse(t, dupResponse)
+	assert.Equal(t, "user already exists", dupResponseBody["message"])
 }
