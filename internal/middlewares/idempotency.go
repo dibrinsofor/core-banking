@@ -1,6 +1,7 @@
 package middlewares
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 
@@ -66,17 +67,20 @@ func Idempotency() gin.HandlerFunc {
 
 		select {
 		case <-panicChan:
-			c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
-				"message": "unable to complete request",
-			})
+			// c.AbortWithStatusJSON(http.StatusInternalServerError, gin.H{
+			// 	"message": "unable to complete request",
+			// })
 
-			// tw.ResponseWriter.WriteHeader(http.StatusInternalServerError)
-			// eResp, _ := json.Marshal(gin.H{"message": "unable to complete request"})
-			// tw.ResponseWriter.Write(eResp)
+			tw.ResponseWriter.WriteHeader(http.StatusInternalServerError)
+			eResp, _ := json.Marshal(gin.H{"message": "unable to complete request"})
+			tw.ResponseWriter.Write(eResp)
 		case <-finished:
 			// if finished, set headers and write resp
 			tw.mu.Lock()
 			defer tw.mu.Unlock()
+
+			// todo: persist idempkey to redis and result
+
 			// map Headers from tw.Header() (written to by gin)
 			// to tw.ResponseWriter for response
 			dst := tw.ResponseWriter.Header()
