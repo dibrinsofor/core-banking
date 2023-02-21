@@ -42,7 +42,7 @@ func (h *Handler) Deposit(c *gin.Context) {
 	if err != nil {
 		log.Println(err)
 		c.JSON(http.StatusInternalServerError, gin.H{
-			"message": "uhoh, something went wrong. Failed to make deposit. check documentation: https://github.com/dibrinsofor/core-banking/blob/master/Readme.MD",
+			"message": "uhoh, something went wrong. check documentation: https://github.com/dibrinsofor/core-banking/blob/master/Readme.MD",
 		})
 		return
 	}
