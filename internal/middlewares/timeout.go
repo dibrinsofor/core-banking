@@ -35,7 +35,7 @@ func Timeout(timeout time.Duration) gin.HandlerFunc {
 				}
 			}()
 
-			c.Next() // calls subsequent middleware(s) and handler
+			c.Next()
 			finished <- struct{}{}
 		}()
 

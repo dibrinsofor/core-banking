@@ -28,7 +28,6 @@ func MakeTestRequest(t *testing.T, route string, body interface{}, method string
 	assert.NoError(t, err)
 
 	req, err := http.NewRequest(method, route, bytes.NewReader(reqBody))
-
 	assert.NoError(t, err)
 
 	return req

@@ -4,7 +4,7 @@ import (
 	"testing"
 
 	"github.com/dibrinsofor/core-banking/internal/handlers"
-	"gotest.tools/v3/assert"
+	"github.com/stretchr/testify/assert"
 )
 
 func TestTimeout(t *testing.T) {
