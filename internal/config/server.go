@@ -30,7 +30,7 @@ func (s *Server) SetupMiddlewares(m []gin.HandlerFunc) {
 }
 
 func (s *Server) SetupRoutes() *gin.Engine {
-	mw := []gin.HandlerFunc{middlewares.Cors(), middlewares.Timeout(s.h.TimeoutDuration)}
+	mw := []gin.HandlerFunc{middlewares.Cors(), middlewares.Timeout(s.h.TimeoutDuration), middlewares.Idempotency()}
 	s.SetupMiddlewares(mw)
 
 	s.e.GET("/healthcheck", s.h.Healthcheck)
@@ -38,7 +38,7 @@ func (s *Server) SetupRoutes() *gin.Engine {
 	s.e.POST("/createAccount", s.h.CreateUser)
 	s.e.POST("/deposit", s.h.Deposit)
 	s.e.POST("/withdraw", s.h.Withdraw)
-	s.e.POST("/transfer", s.h.Transfer).Use(middlewares.Idempotency())
+	s.e.POST("/transfer", s.h.Transfer)
 	s.e.GET("/transHistory", s.h.TransactionHistory)
 
 	// authenticatedRoutes := s.e.Group("/auth").Use(middlewares.AuthorizeJWT())

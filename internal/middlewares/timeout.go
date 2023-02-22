@@ -32,6 +32,7 @@ func Timeout(timeout time.Duration) gin.HandlerFunc {
 			defer func() {
 				if p := recover(); p != nil {
 					panicChan <- p
+					fmt.Println(p)
 				}
 			}()
 
@@ -41,9 +42,10 @@ func Timeout(timeout time.Duration) gin.HandlerFunc {
 
 		select {
 		case <-panicChan:
-
-			tw.ResponseWriter.WriteHeader(http.StatusInternalServerError)
-			eResp, _ := json.Marshal(gin.H{"message": "unable to complete request"})
+			tw.ResponseWriter.Header().Add("Content-Type", "application/json")
+			tw.ResponseWriter.WriteHeader(tw.ResponseWriter.Status())
+			eResp, _ := json.Marshal(gin.H{"message": "uhoh, something went wrong. check documentation: https://github.com/dibrinsofor/core-banking/blob/master/Readme.MD"})
+			fmt.Println("Error check 1")
 			tw.ResponseWriter.Write(eResp)
 		case <-finished:
 			// if finished, set headers and write resp
@@ -55,6 +57,7 @@ func Timeout(timeout time.Duration) gin.HandlerFunc {
 			for k, vv := range tw.Header() {
 				dst[k] = vv
 			}
+			tw.ResponseWriter.Header().Set("Content-Type", "application/json")
 			tw.ResponseWriter.WriteHeader(tw.code)
 			// tw.wbuf will have been written to already when gin writes to tw.Write()
 			tw.ResponseWriter.Write(tw.wbuf.Bytes())
@@ -78,7 +81,7 @@ func Timeout(timeout time.Duration) gin.HandlerFunc {
 type timeoutWriter struct {
 	gin.ResponseWriter
 	h           http.Header
-	wbuf        bytes.Buffer
+	wbuf        *bytes.Buffer
 	mu          sync.Mutex
 	timedOut    bool
 	wroteHeader bool
