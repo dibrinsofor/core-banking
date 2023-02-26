@@ -14,19 +14,21 @@ import (
 
 func Timeout(timeout time.Duration) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// set Gin's writer as our custom writer
-		tw := &timeoutWriter{ResponseWriter: c.Writer, h: make(http.Header)}
-		c.Writer = tw
+		var tw timeoutWriter
 
-		// wrap the request context with a timeout
+		tw.ResponseWriter = c.Writer
+		tw.h = make(http.Header)
+		tw.body = bytes.NewBufferString("")
+
+		c.Writer = &tw
+
 		ctx, cancel := context.WithTimeout(c.Request.Context(), timeout)
 		defer cancel()
 
-		// update gin request context
 		c.Request = c.Request.WithContext(ctx)
 
-		finished := make(chan struct{})        // to indicate handler finished
-		panicChan := make(chan interface{}, 1) // used to handle panics if we can't recover
+		finished := make(chan struct{})
+		panicChan := make(chan interface{}, 1)
 
 		go func() {
 			defer func() {
@@ -44,28 +46,22 @@ func Timeout(timeout time.Duration) gin.HandlerFunc {
 		case <-panicChan:
 			tw.ResponseWriter.Header().Add("Content-Type", "application/json")
 			tw.ResponseWriter.WriteHeader(tw.ResponseWriter.Status())
-			eResp, _ := json.Marshal(gin.H{"message": "uhoh, something went wrong. check documentation: https://github.com/dibrinsofor/core-banking/blob/master/Readme.MD"})
-			fmt.Println("Error check 1")
-			tw.ResponseWriter.Write(eResp)
+			tw.ResponseWriter.Write(tw.body.Bytes())
 		case <-finished:
-			// if finished, set headers and write resp
 			tw.mu.Lock()
 			defer tw.mu.Unlock()
-			// map Headers from tw.Header() (written to by gin)
-			// to tw.ResponseWriter for response
+
+			// map Headers from tw.Header()
 			dst := tw.ResponseWriter.Header()
 			for k, vv := range tw.Header() {
 				dst[k] = vv
 			}
 			tw.ResponseWriter.Header().Set("Content-Type", "application/json")
-			tw.ResponseWriter.WriteHeader(tw.code)
-			// tw.wbuf will have been written to already when gin writes to tw.Write()
-			tw.ResponseWriter.Write(tw.wbuf.Bytes())
+			tw.ResponseWriter.Write(tw.body.Bytes())
 		case <-ctx.Done():
-			// timeout has occurred, send errTimeout and write headers
 			tw.mu.Lock()
 			defer tw.mu.Unlock()
-			// ResponseWriter from gin
+
 			tw.ResponseWriter.Header().Set("Content-Type", "application/json")
 			tw.ResponseWriter.WriteHeader(http.StatusRequestTimeout)
 			eResp, _ := json.Marshal(gin.H{
@@ -81,7 +77,7 @@ func Timeout(timeout time.Duration) gin.HandlerFunc {
 type timeoutWriter struct {
 	gin.ResponseWriter
 	h           http.Header
-	wbuf        *bytes.Buffer
+	body        *bytes.Buffer
 	mu          sync.Mutex
 	timedOut    bool
 	wroteHeader bool
@@ -91,18 +87,14 @@ type timeoutWriter struct {
 func (tw *timeoutWriter) Write(b []byte) (int, error) {
 	tw.mu.Lock()
 	defer tw.mu.Unlock()
-	if tw.timedOut {
-		return 0, nil
-	}
-
-	return tw.wbuf.Write(b)
+	return tw.body.Write(b)
 }
 
 func (tw *timeoutWriter) WriteHeader(code int) {
 	checkWriteHeaderCode(code)
 	tw.mu.Lock()
 	defer tw.mu.Unlock()
-	// We do not write the header if we've timed out or written the header
+
 	if tw.timedOut || tw.wroteHeader {
 		return
 	}

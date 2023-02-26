@@ -30,7 +30,7 @@ func (s *Server) SetupMiddlewares(m []gin.HandlerFunc) {
 }
 
 func (s *Server) SetupRoutes() *gin.Engine {
-	mw := []gin.HandlerFunc{middlewares.Cors(), middlewares.Timeout(s.h.TimeoutDuration), middlewares.Idempotency()}
+	mw := []gin.HandlerFunc{middlewares.Cors(), middlewares.Idempotency(), middlewares.Timeout(s.h.TimeoutDuration)}
 	s.SetupMiddlewares(mw)
 
 	s.e.GET("/healthcheck", s.h.Healthcheck)
