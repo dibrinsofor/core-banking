@@ -6,8 +6,8 @@ a minimal implementation of a banking service, with support for:
 - [X] consistent transfer of funds from one user to another
 - [X] transaction history (date, amount, balance)
 - [X] transaction history filters (just deposits, withdrawal, date)
-- [ ] idempotent requests
-- [ ] secure withdrawals and transfers
+- [X] idempotent requests
+- [X] request timeouts
 - [ ] introduce account tiers
 
 ### Setup
@@ -18,6 +18,8 @@ a minimal implementation of a banking service, with support for:
 
 
 ### API Docs (Endpoints)
+
+The client is responsible for sending `Idempotency-Key` Headers (preferably UUID) along with `POST` requests. [Read more here](https://stripe.com/blog/idempotency)
 
 - Create Account:
 
@@ -84,7 +86,7 @@ Sample response
         "account_number": "6eb55ee8-cdcb-4819-9301-0ab1c3a5cb21",
         "name": "Dibri Nsofor",
         "email": "dibrinsofor@gmail.com",
-        "balance": 50000,
+        "balance": "$22,005.92",
         "created_at": "2022-09-03T10:41:29.585022Z"
     },
     "message": "transfer successful"
@@ -109,7 +111,7 @@ Sample response (**cut short to keep this pithy**)
             "account_number": "9cbf9d63-8510-4f20-928a-80a75818ebb1",
             "action_performed": "Deposit",
             "recipient": "",
-            "balance": 12000,
+            "balance": "$12,000.00",
             "created_at": "2022-09-03T13:29:42.94933Z"
         },
         {
@@ -117,7 +119,7 @@ Sample response (**cut short to keep this pithy**)
             "account_number": "9cbf9d63-8510-4f20-928a-80a75818ebb1",
             "action_performed": "Deposit",
             "recipient": "",
-            "balance": 24000,
+            "balance": "$24,000.00",
             "created_at": "2022-09-03T13:29:50.259873Z"
         },
         {
@@ -125,7 +127,7 @@ Sample response (**cut short to keep this pithy**)
             "account_number": "9cbf9d63-8510-4f20-928a-80a75818ebb1",
             "action_performed": "WITHDRAW",
             "recipient": "",
-            "balance": 103400,
+            "balance": "$134,005.92",
             "created_at": "2022-09-03T14:05:28.708591Z"
         }
     ],
@@ -151,7 +153,7 @@ Sample response (**cut short for readability sake**)
             "account_number": "9cbf9d63-8510-4f20-928a-80a75818ebb1",
             "action_performed": "DEPOSIT",
             "recipient": "",
-            "balance": 329492080,
+            "balance": "$329,492,080.92",
             "created_at": "2022-09-03T16:06:36.625368Z",
             "created_date": "2022-09-03"
         },
@@ -160,7 +162,7 @@ Sample response (**cut short for readability sake**)
             "account_number": "9cbf9d63-8510-4f20-928a-80a75818ebb1",
             "action_performed": "DEPOSIT",
             "recipient": "",
-            "balance": 389385560,
+            "balance": "$389,385,560.00",
             "created_at": "2022-09-03T16:07:10.709543Z",
             "created_date": "2022-09-03"
         },
